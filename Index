@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Apoio Viário – Localização</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --orange: #FF6B35;
+      --green:  #25D366; /* WhatsApp green */
+      --bg:     #0D0D0D;
+      --card:   #181818;
+      --border: rgba(255,255,255,0.08);
+      --text:   #F2F2F2;
+      --muted:  #888;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse 70% 50% at 50% 0%,
+        rgba(255,107,53,0.10) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 40px 28px 32px;
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 32px 64px rgba(0,0,0,0.5);
+    }
+
+    /* ── Ícone animado ── */
+    .pin-wrap {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FF6B35, #FF9500);
+      margin: 0 auto 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 42px;
+      box-shadow: 0 0 0 0 rgba(255,107,53,0.4);
+      animation: ping 2s ease-in-out infinite;
+    }
+
+    @keyframes ping {
+      0%  { box-shadow: 0 0 0  0   rgba(255,107,53,0.4); }
+      60% { box-shadow: 0 0 0 24px rgba(255,107,53,0.0); }
+      100%{ box-shadow: 0 0 0  0   rgba(255,107,53,0.0); }
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+
+    .sub {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 32px;
+    }
+
+    /* ── Botão principal ── */
+    #btn {
+      width: 100%;
+      padding: 18px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #FF6B35, #FF9500);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      box-shadow: 0 8px 24px rgba(255,107,53,0.35);
+      transition: transform 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.2px;
+    }
+    #btn:hover  { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(255,107,53,0.45); }
+    #btn:active { transform: scale(0.98); }
+    #btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    /* ── Status ── */
+    #status {
+      margin-top: 24px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--muted);
+      min-height: 20px;
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 22px; height: 22px;
+      border: 3px solid rgba(255,255,255,0.25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Caixa de resultado ── */
+    .result-box {
+      margin-top: 20px;
+      background: rgba(37,211,102,0.07);
+      border: 1px solid rgba(37,211,102,0.25);
+      border-radius: 16px;
+      padding: 18px 16px;
+      text-align: left;
+    }
+
+    .result-box .label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+    }
+
+    .coord-line {
+      font-size: 13px;
+      color: var(--text);
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+    }
+    .coord-line:last-of-type { border: none; }
+    .coord-line span:first-child { color: var(--muted); }
+    .coord-line span:last-child  { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+    /* ── Botão WhatsApp ── */
+    .btn-wpp {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--green);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 8px 20px rgba(37,211,102,0.3);
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-wpp:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .footer {
+      margin-top: 24px;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <div class="pin-wrap">📍</div>
+
+  <h1>Precisa de Ajuda<br/>na Rodovia?</h1>
+
+  <p class="sub">
+    Clique no botão abaixo, autorize o GPS e sua localização
+    será enviada automaticamente ao atendente pelo WhatsApp.
+  </p>
+
+  <button id="btn" onclick="iniciar()">
+    <span>📡</span> Compartilhar minha Localização
+  </button>
+
+  <div id="status"></div>
+
+</div>
+
+<script>
+  // ══════════════════════════════════════════════════════
+  //  ⚙️  CONFIGURAÇÃO
+  //  Troque pelo número do atendente/central (com DDI+DDD, sem + ou espaços)
+  //  Ex.: Brasil, SP, (31) 998977219 → 5531998977219
+  //
+  //  💡 Dica: você pode passar o número pela URL assim:
+  //     gps.html?tel=5511999999999
+  //     Aí cada atendente usa seu próprio link personalizado.
+  // ══════════════════════════════════════════════════════
+  const NUMERO_ATENDENTE = obterTelefone() || '5531998977219';
+
+  function obterTelefone() {
+    return new URLSearchParams(window.location.search).get('tel') || '';
+  }
+  // ══════════════════════════════════════════════════════
+
+  function iniciar() {
+    const btn = document.getElementById('btn');
+    const status = document.getElementById('status');
+
+    if (!navigator.geolocation) {
+      status.innerHTML = '⚠️ Seu navegador não suporta GPS. Abra este link no Chrome ou Safari.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Obtendo localização...';
+    status.innerHTML = '🔒 Permita o acesso ao GPS quando solicitado...';
+
+    navigator.geolocation.getCurrentPosition(
+      onSucesso,
+      onErro,
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+    );
+  }
+
+  function onSucesso(pos) {
+    const lat  = pos.coords.latitude;
+    const lon  = pos.coords.longitude;
+    const acc  = Math.round(pos.coords.accuracy);
+    const hora = new Date().toLocaleString('pt-BR');
+
+    // ── Monta link Google Maps
+    const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+
+    // ── Monta mensagem WhatsApp
+    const msg =
+      `🛣️ *PEDIDO DE SOCORRO – RODOVIA*\n\n` +
+      `📍 *Localização GPS:*\n` +
+      `Latitude:  ${lat.toFixed(6)}\n` +
+      `Longitude: ${lon.toFixed(6)}\n` +
+      `Precisão:  ±${acc} metros\n` +
+      `Horário:   ${hora}\n\n` +
+      `🗺️ *Ver no Google Maps:*\n${mapsUrl}`;
+
+    const wppUrl = `https://wa.me/${NUMERO_ATENDENTE}?text=${encodeURIComponent(msg)}`;
+
+    // ── Atualiza botão principal
+    const btn = document.getElementById('btn');
+    btn.disabled = false;
+    btn.innerHTML = '✅ Localização obtida!';
+    btn.style.background = 'linear-gradient(135deg, #2a9d2a, #34A853)';
+    btn.style.boxShadow  = '0 8px 24px rgba(52,168,83,0.35)';
+
+    // ── Mostra resultado + botão WhatsApp
+    document.getElementById('status').innerHTML = `
+      <div class="result-box">
+        <div class="label">✅ Localização confirmada</div>
+        <div class="coord-line"><span>Latitude</span><span>${lat.toFixed(6)}</span></div>
+        <div class="coord-line"><span>Longitude</span><span>${lon.toFixed(6)}</span></div>
+        <div class="coord-line"><span>Precisão</span><span>±${acc} metros</span></div>
+        <div class="coord-line"><span>Horário</span><span>${hora}</span></div>
+      </div>
+      <a class="btn-wpp" href="${wppUrl}">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="white">
+          <path d="M16 3C8.8 3 3 8.8 3 16c0 2.4.7 4.7 1.9 6.6L3 29l6.6-1.9C11.3 28.3 13.6 29 16 29c7.2 0 13-5.8 13-13S23.2 3 16 3zm6.8 18.2c-.3.8-1.5 1.5-2.1 1.6-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5.1-4.5-.1-.2-1.1-1.5-1.1-2.8 0-1.3.7-2 .9-2.2.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .6l-.5.6-.3.4c.2.3.8 1.2 1.7 1.9 1.1.9 2.1 1.2 2.4 1.3.3.1.4 0 .6-.2l.6-.7c.2-.2.4-.2.6-.1l2 .9c.2.1.4.2.4.4.1.4-.1 1.4-.4 2.2z"/>
+        </svg>
+        Enviar ao Atendente pelo WhatsApp
+      </a>
+      <div class="footer">Toque no botão verde. O WhatsApp abrirá com sua localização já preenchida.</div>
+    `;
+
+    // ── Abre WhatsApp automaticamente (funciona na maioria dos celulares)
+    setTimeout(() => { window.location.href = wppUrl; }, 800);
+  }
+
+  function onErro(err) {
+    const btn = document.getElementById('btn');
+    btn.disabled = false;
+    btn.innerHTML = '<span>📡</span> Tentar Novamente';
+
+    const msgs = {
+      1: '❌ Acesso ao GPS negado. Vá em Configurações > Privacidade > Localização e permita o acesso ao navegador.',
+      2: '⚠️ Não foi possível obter sua posição. Verifique se o GPS do celular está ativado.',
+      3: '⏱️ Tempo esgotado. Verifique o sinal de GPS e tente novamente.'
+    };
+    document.getElementById('status').innerHTML = msgs[err.code] || '⚠️ Erro ao obter localização.';
+  }
+</script>
+</body>
+</html>
